@@ -62,16 +62,16 @@ ollama pull llama3.2:1b
 
 ## Files
 
-| File | Purpose |
-|------|---------|
-| `docker-compose.yml` | Defines backend, frontend, and Ollama services |
-| `.env.example` | Template for required environment variables |
-| `backend/main.py` | FastAPI app — your primary backend work file |
-| `backend/rag.py` | RAG logic: chunking, retrieval, generation |
-| `backend/config.py` | Reads all config from environment variables |
-| `backend/tests/test_api.py` | API smoke tests (at least 3 required) |
-| `backend/docs/` | Document corpus — add `.txt` or `.md` files here |
-| `frontend/app.py` | Streamlit chat interface — your primary frontend file |
+| File                        | Purpose                                               |
+| --------------------------- | ----------------------------------------------------- |
+| `docker-compose.yml`        | Defines backend, frontend, and Ollama services        |
+| `.env.example`              | Template for required environment variables           |
+| `backend/main.py`           | FastAPI app — your primary backend work file          |
+| `backend/rag.py`            | RAG logic: chunking, retrieval, generation            |
+| `backend/config.py`         | Reads all config from environment variables           |
+| `backend/tests/test_api.py` | API smoke tests (at least 3 required)                 |
+| `backend/docs/`             | Document corpus — add `.txt` or `.md` files here      |
+| `frontend/app.py`           | Streamlit chat interface — your primary frontend file |
 
 ## Requirements
 
