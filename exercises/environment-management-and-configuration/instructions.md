@@ -15,14 +15,14 @@ Refactor your RAG application to read all configuration from environment variabl
 
 **Settings to include (at minimum):**
 
-| Variable | Default | Purpose |
-|----------|---------|---------|
-| `OLLAMA_URL` | `http://localhost:11434` | Ollama endpoint |
-| `MODEL_NAME` | `llama3.2:1b` | Model to use |
-| `CHROMA_PATH` | `./rag_db` | ChromaDB storage path |
-| `MAX_RESULTS` | `3` | Default retrieval count |
-| `CONFIDENCE_THRESHOLD` | `1.0` | Distance filter cutoff |
-| `DEBUG` | `false` | Enable debug output |
+| Variable               | Default                  | Purpose                 |
+| ---------------------- | ------------------------ | ----------------------- |
+| `OLLAMA_URL`           | `http://localhost:11434` | Ollama endpoint         |
+| `MODEL_NAME`           | `llama3.2:1b`            | Model to use            |
+| `CHROMA_PATH`          | `./rag_db`               | ChromaDB storage path   |
+| `MAX_RESULTS`          | `3`                      | Default retrieval count |
+| `CONFIDENCE_THRESHOLD` | `1.0`                    | Distance filter cutoff  |
+| `DEBUG`                | `false`                  | Enable debug output     |
 
 ## Reference Code
 

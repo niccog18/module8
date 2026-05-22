@@ -29,17 +29,18 @@ containerizing-your-rag-application/
 
 **`docker-compose.yml`** — Three services:
 
-| Service | Build | Ports | Key env vars |
-|---------|-------|-------|--------------|
-| `backend` | `./backend` | `8000:8000` | `OLLAMA_URL=http://ollama:11434` |
-| `frontend` | `./frontend` | `8501:8501` | `BACKEND_URL=http://backend:8000` |
-| `ollama` | `ollama/ollama` image | `11434:11434` | — |
+| Service    | Build                 | Ports         | Key env vars                      |
+| ---------- | --------------------- | ------------- | --------------------------------- |
+| `backend`  | `./backend`           | `8000:8000`   | `OLLAMA_URL=http://ollama:11434`  |
+| `frontend` | `./frontend`          | `8501:8501`   | `BACKEND_URL=http://backend:8000` |
+| `ollama`   | `ollama/ollama` image | `11434:11434` | —                                 |
 
 **`backend/Dockerfile`** — Python 3.11-slim, installs requirements, runs uvicorn
 
 **`frontend/Dockerfile`** — Python 3.11-slim, installs requirements, runs streamlit
 
 **`frontend/app.py`** — Streamlit UI with:
+
 - A text input for questions
 - A "Re-index Documents" button that calls `POST /ingest`
 - Answer display with source citations and confidence badge

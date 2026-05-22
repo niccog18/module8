@@ -11,12 +11,12 @@ Wrap your RAG pipeline in a FastAPI application with production-ready features: 
 
 A `my_rag_api.py` with 4 endpoints:
 
-| Method | Path | Purpose |
-|--------|------|---------|
-| `POST` | `/ask` | Accept a question, return a grounded answer with sources and confidence |
-| `POST` | `/ingest` | Load documents from `docs/` into ChromaDB |
-| `GET` | `/stats` | Return document count and model info |
-| `GET` | `/health` | Check if ChromaDB is accessible and Ollama is reachable |
+| Method | Path      | Purpose                                                                 |
+| ------ | --------- | ----------------------------------------------------------------------- |
+| `POST` | `/ask`    | Accept a question, return a grounded answer with sources and confidence |
+| `POST` | `/ingest` | Load documents from `docs/` into ChromaDB                               |
+| `GET`  | `/stats`  | Return document count and model info                                    |
+| `GET`  | `/health` | Check if ChromaDB is accessible and Ollama is reachable                 |
 
 **Also required:**
 

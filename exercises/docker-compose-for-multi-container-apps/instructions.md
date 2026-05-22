@@ -14,10 +14,10 @@ Build a Docker Compose setup with your FastAPI RAG backend and Ollama running as
 
 ## docker-compose.yml Requirements
 
-| Service | Image | Details |
-|---------|-------|---------|
+| Service   | Image                     | Details                                                            |
+| --------- | ------------------------- | ------------------------------------------------------------------ |
 | `backend` | Built from `./Dockerfile` | Port `8000:8000`, depends on `ollama`, reads `OLLAMA_URL` from env |
-| `ollama` | `ollama/ollama` | Port `11434:11434`, named volume for model storage |
+| `ollama`  | `ollama/ollama`           | Port `11434:11434`, named volume for model storage                 |
 
 **Also configure:**
 
@@ -39,6 +39,7 @@ docker-compose exec ollama ollama pull llama3.2:1b
 ```
 
 Verify:
+
 - `http://localhost:8000/health` shows `"ollama": "connected"`
 - `http://localhost:8000/docs` loads Swagger UI
 
