@@ -1,0 +1,33 @@
+# .dockerignore  (Solution)
+# ==========================
+# Excludes files from the Docker build context.
+# Keeping the context small makes builds faster and avoids leaking secrets.
+
+# Python bytecode — compiled automatically, never needed in the image
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Local virtual environment — the image installs its own deps via pip
+venv/
+.venv/
+env/
+
+# Version control — not needed in the image
+.git/
+.gitignore
+
+# Secrets — CRITICAL: never let .env land in a Docker image
+.env
+
+# Vector store data — rebuilt inside the container via POST /ingest
+# Including it would make the image huge and stale
+chroma_data/
+rag_db/
+
+# Editor and OS noise
+.DS_Store
+*.swp
+.idea/
+.vscode/

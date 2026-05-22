@@ -1,0 +1,56 @@
+# docker-compose.yml  (Solution)
+# =================================
+# Two-service stack: FastAPI backend + Ollama
+#
+# Run:   docker-compose up --build
+# Model: docker-compose exec ollama ollama pull llama3.2:1b
+# Stop:  docker-compose down          (keeps volumes)
+# Wipe:  docker-compose down -v       (removes volumes)
+#
+# Key concepts:
+#   Service names as hostnames:
+#     Inside Docker Compose, services communicate using their service name as
+#     the hostname. The backend reaches Ollama at http://ollama:11434, NOT
+#     http://localhost:11434 — localhost inside a container is the container
+#     itself, not the host machine or another container.
+#
+#   Named volumes for persistence:
+#     docker-compose down destroys containers but KEEPS named volumes.
+#     This means ChromaDB data and downloaded Ollama models survive restarts.
+#     Use `docker-compose down -v` to also remove volumes (full reset).
+#
+#   depends_on:
+#     Ensures Ollama starts before the backend. Note: depends_on only waits
+#     for the container to START, not for Ollama to be READY. In production
+#     add a healthcheck or a retry loop in the app's startup code.
+
+version: "3.8"
+
+services:
+
+  backend:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      # Use the service name "ollama" as the hostname — not localhost
+      - OLLAMA_URL=http://ollama:11434
+      - CHROMA_PATH=/app/rag_db
+      - MODEL_NAME=llama3.2:1b
+    volumes:
+      # Persist ChromaDB data across container restarts
+      - chroma_data:/app/rag_db
+    depends_on:
+      - ollama
+
+  ollama:
+    image: ollama/ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      # Persist downloaded models — avoids re-downloading on every restart
+      - ollama_models:/root/.ollama
+
+volumes:
+  chroma_data:
+  ollama_models:

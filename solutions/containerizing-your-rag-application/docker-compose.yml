@@ -1,0 +1,61 @@
+# docker-compose.yml  (Solution)
+# =================================
+# Three-service RAG stack: backend (FastAPI) + frontend (Streamlit) + ollama
+#
+# Run:   docker-compose up --build
+# Model: docker-compose exec ollama ollama pull llama3.2:1b
+# Stop:  docker-compose down
+#
+# Key concepts:
+#   Three tiers:
+#     backend  — FastAPI RAG API (port 8000)
+#     frontend — Streamlit UI    (port 8501)
+#     ollama   — Local LLM runtime (port 11434, internal only)
+#
+#   Inter-service networking:
+#     backend  → ollama:   http://ollama:11434
+#     frontend → backend:  http://backend:8000
+#     host     → frontend: http://localhost:8501
+#     host     → backend:  http://localhost:8000  (for direct API testing)
+#
+#   env_file vs environment:
+#     env_file reads key=value pairs from a file (good for many variables).
+#     environment: inlines them in the YAML (good for a few, service-specific ones).
+#     Here we use environment: for clarity; switch to env_file for production.
+
+version: "3.8"
+
+services:
+
+  backend:
+    build: ./backend
+    ports:
+      - "8000:8000"
+    environment:
+      - OLLAMA_URL=http://ollama:11434
+      - CHROMA_PATH=/app/rag_db
+      - MODEL_NAME=llama3.2:1b
+    volumes:
+      - chroma_data:/app/rag_db
+    depends_on:
+      - ollama
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "8501:8501"
+    environment:
+      - BACKEND_URL=http://backend:8000
+    depends_on:
+      - backend
+
+  ollama:
+    image: ollama/ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_models:/root/.ollama
+
+volumes:
+  chroma_data:
+  ollama_models:
