@@ -1,0 +1,115 @@
+# Dockerfile Creation — Concept
+
+**Module 8 — RAG Intro & Docker Deployment**
+
+**Estimated time: 35 minutes**
+
+---
+
+### Learning Objectives
+
+By the end of this lesson, you will be able to:
+
+1. Write a Dockerfile that builds a Python application image
+2. Explain each Dockerfile instruction: FROM, WORKDIR, COPY, RUN, CMD, EXPOSE
+3. Apply best practices: layer ordering, `.dockerignore`, minimal base images
+4. Build and test a Docker image for a FastAPI application
+
+---
+
+`[VIDEO PLACEHOLDER: 8 min — "Writing Dockerfiles: step-by-step construction of a Dockerfile for a FastAPI app. Explain each instruction, show layer caching, and demonstrate build optimization with requirements.txt copied first."]`
+
+A Dockerfile is a recipe. Each line is an instruction that tells Docker how to build your image, one layer at a time. Understanding these instructions and their order is the difference between an image that builds in 10 seconds (using cache) and one that rebuilds everything from scratch every time.
+
+---
+
+## Anatomy of a Dockerfile
+
+```docker
+# Start from an official Python image
+FROM python:3.11-slim
+
+# Set the working directory inside the container
+WORKDIR /app
+
+# Copy requirements first (for caching — explained below)
+COPY requirements.txt .
+
+# Install Python dependencies
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy the rest of the application code
+COPY . .
+
+# Document which port the app uses (informational)
+EXPOSE 8000
+
+# The command to run when the container starts
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+```
+
+---
+
+## Instructions Explained
+
+**`FROM python:3.11-slim`** — The base image. Every Dockerfile starts here. `slim` variants are smaller (150MB vs 900MB for the full image) because they exclude compilers and dev tools you don’t need at runtime.
+
+**`WORKDIR /app`** — Sets the working directory for all subsequent instructions. Like `cd /app` but creates the directory if it doesn’t exist.
+
+**`COPY requirements.txt .`** — Copies a file from your machine into the image. The `.` means "copy into the current WORKDIR."
+
+**`RUN pip install ...`** — Executes a command during the build. Each RUN creates a new layer. `--no-cache-dir` saves space by not caching downloaded packages.
+
+**`COPY . .`** — Copies your entire project directory into the image.
+
+**`EXPOSE 8000`** — Documents which port the application listens on. This is informational — it doesn’t actually open the port. You still need `-p` when running.
+
+**`CMD [...]`** — The default command when the container starts. The `"0.0.0.0"` host is critical — it makes the app accessible from outside the container. Using `"127.0.0.1"` (the default for uvicorn) would make it only accessible inside the container.
+
+---
+
+## The Layer Caching Trick
+
+Docker builds images in layers. Each instruction creates a layer. If a layer hasn’t changed since the last build, Docker uses the cached version — skipping the work entirely.
+
+This is why we copy `requirements.txt` BEFORE copying the code:
+
+```docker
+COPY requirements.txt .          # Layer 1: rarely changes
+RUN pip install -r requirements.txt  # Layer 2: cached if requirements unchanged
+COPY . .                         # Layer 3: changes often (your code)
+```
+
+If you change your Python code but not your requirements, Docker reuses the cached pip install layer. This can save minutes on each build.
+
+If you did `COPY . .` first and then `RUN pip install`, every code change would invalidate the cache and reinstall all packages.
+
+---
+
+## The `.dockerignore` File
+
+Like `.gitignore`, a `.dockerignore` file tells Docker which files NOT to copy into the image:
+
+```
+__pycache__
+*.pyc
+.git
+.env
+venv
+chroma_data
+.DS_Store
+node_modules
+```
+
+This keeps your image smaller and prevents sensitive files (like `.env` with API keys) from being included.
+
+---
+
+## Best Practices Summary
+
+1. **Use slim base images** — `python:3.11-slim` instead of `python:3.11`
+2. **Copy requirements first** — Leverage layer caching
+3. **Use `.dockerignore`** — Exclude unnecessary files
+4. **Bind to `0.0.0.0`** — Make the app accessible from outside the container
+5. **Use `--no-cache-dir`** — Reduce image size
+6. **One service per container** — Don’t put FastAPI and Streamlit in the same container

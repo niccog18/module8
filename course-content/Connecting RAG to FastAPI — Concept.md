@@ -1,0 +1,125 @@
+# Connecting RAG to FastAPI — Concept
+
+**Module 8 — RAG Intro & Docker Deployment**
+
+**Estimated time: 35 minutes**
+
+---
+
+### Learning Objectives
+
+By the end of this lesson, you will be able to:
+
+1. Expose a RAG pipeline as a FastAPI endpoint that accepts questions and returns grounded answers
+2. Design API schemas for RAG requests and responses using Pydantic
+3. Implement streaming responses from FastAPI to frontend clients
+4. Structure a RAG project with clean separation between API, retrieval, and generation layers
+
+---
+
+`[VIDEO PLACEHOLDER: 8 min — "RAG + FastAPI: wrap the RAG pipeline in API endpoints. Show the /ask endpoint accepting a question and returning a grounded answer with sources. Demo using Swagger UI and a Streamlit frontend."]`
+
+Your RAG pipeline works as a Python script. But scripts aren’t applications. You can’t share a script with users, run it as a service, or connect a frontend to it. To turn it into a real application, you need to wrap it in an API.
+
+This is where all your Module 5 FastAPI skills come back. You’ll create endpoints that accept questions, run the RAG pipeline, and return structured responses. The Streamlit frontend (or any client) can then call these endpoints.
+
+Think of it as the difference between cooking a meal for yourself (the script) and opening a restaurant (the API). The cooking is the same, but now you have a menu, a door, and a way for customers to order.
+
+---
+
+## API Design for RAG
+
+A RAG API typically needs these endpoints:
+
+```
+POST /ask           → Accept a question, return a RAG-generated answer
+POST /ingest        → Load/reload documents into the knowledge base
+GET  /stats         → Return collection stats (document count, etc.)
+GET  /health        → Health check (is Ollama running? Is ChromaDB accessible?)
+```
+
+---
+
+## Pydantic Schemas for RAG
+
+Define clear request and response shapes:
+
+```python
+from pydantic import BaseModel
+from typing import Optional
+
+class AskRequest(BaseModel):
+    question: str
+    n_results: int = 3
+    max_distance: float = 1.0
+
+class Source(BaseModel):
+    text: str
+    source_file: str
+    distance: float
+
+class AskResponse(BaseModel):
+    answer: str
+    sources: list[Source]
+    confidence: str   # "high", "medium", "low", "none"
+    model: str
+```
+
+Pydantic validates incoming requests automatically (Module 5) and documents the API in Swagger UI.
+
+---
+
+## Streaming Responses from FastAPI
+
+For chat-like experiences, you want tokens to stream to the frontend as they’re generated. FastAPI supports this with `StreamingResponse`:
+
+```python
+from fastapi.responses import StreamingResponse
+
+@app.post("/ask/stream")
+async def ask_stream(request: AskRequest):
+    chunks = retrieve(request.question, request.n_results, request.max_distance)
+    messages = build_messages(request.question, chunks)
+
+    def token_generator():
+        for token in stream_from_ollama(messages):
+            yield token
+
+    return StreamingResponse(token_generator(), media_type="text/plain")
+```
+
+The Streamlit frontend can consume this stream with `requests` in streaming mode, feeding tokens to `st.write_stream()`.
+
+---
+
+## Project Structure
+
+A well-organized RAG API project:
+
+```
+rag-api/
+├── main.py           # FastAPI app with endpoints
+├── rag.py            # RAG pipeline (retrieve, build prompt, generate)
+├── ingest.py         # Document loading and ChromaDB ingestion
+├── schemas.py        # Pydantic request/response models
+├── config.py         # Settings (model name, ChromaDB path, thresholds)
+├── docs/             # Document collection
+└── requirements.txt
+```
+
+This separation means you can change the retrieval strategy, swap the LLM, or modify the prompt without touching the API layer. Clean architecture makes the Docker containerization in Week 2 much easier.
+
+---
+
+## The Complete Stack
+
+With RAG connected to FastAPI, your full stack is:
+
+`[DIAGRAM PLACEHOLDER: Architecture diagram showing: User → Streamlit (port 8501) → FastAPI (port 8000) → ChromaDB + Ollama (port 11434). With arrows showing the data flow: question goes in, FastAPI retrieves from ChromaDB, calls Ollama, returns answer to Streamlit, displayed to user.]`
+
+- **Streamlit** (port 8501): User interface with chat, search, and dashboard
+- **FastAPI** (port 8000): API layer handling requests, authentication, and orchestration
+- **ChromaDB**: Vector storage for document embeddings
+- **Ollama** (port 11434): Local LLM for answer generation
+
+In Week 2, you’ll containerize this entire stack with Docker Compose so it runs with a single command.

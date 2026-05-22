@@ -1,0 +1,122 @@
+# Environment Management & Configuration — Concept
+
+**Module 8 — RAG Intro & Docker Deployment**
+
+**Estimated time: 25 minutes**
+
+---
+
+### Learning Objectives
+
+By the end of this lesson, you will be able to:
+
+1. Use environment variables to configure Docker containers without hardcoding values
+2. Manage secrets (API keys, passwords) safely with `.env` files and Docker secrets
+3. Configure different settings for development and production environments
+4. Apply the twelve-factor app principle of configuration through environment
+
+---
+
+`[VIDEO PLACEHOLDER: 6 min — "Environment Management: show how the same Docker image runs with different configurations by changing environment variables. Demonstrate .env files, docker-compose overrides, and secret management."]`
+
+Your RAG application has several configurable values: the Ollama URL, model name, ChromaDB path, similarity threshold, max results, API keys, and debug flags. Hardcoding these values means rebuilding the image every time you change a setting. Environment variables let you change configuration without rebuilding.
+
+The principle is simple: **code stays the same, configuration changes per environment**. The same image runs in development (with debug logging, local Ollama) and production (with minimal logging, cloud LLM) just by changing environment variables.
+
+---
+
+## Environment Variables in Docker Compose
+
+```yaml
+services:
+  backend:
+    build: ./backend
+    environment:
+      - OLLAMA_URL=http://ollama:11434
+      - MODEL_NAME=llama3.2:1b
+      - MAX_RESULTS=5
+      - CONFIDENCE_THRESHOLD=1.0
+      - DEBUG=true
+```
+
+In your Python code:
+
+```python
+import os
+
+OLLAMA_URL = os.environ.get("OLLAMA_URL", "http://localhost:11434")
+MODEL = os.environ.get("MODEL_NAME", "llama3.2:1b")
+MAX_RESULTS = int(os.environ.get("MAX_RESULTS", "3"))
+DEBUG = os.environ.get("DEBUG", "false").lower() == "true"
+```
+
+The `os.environ.get(key, default)` pattern provides a fallback for local development (when the variable isn’t set).
+
+---
+
+## The `.env` File
+
+Instead of listing all variables in `docker-compose.yml`, use a `.env` file:
+
+```bash
+# .env — DO NOT commit to Git!
+OLLAMA_URL=http://ollama:11434
+MODEL_NAME=llama3.2:1b
+OPENAI_API_KEY=sk-your-key-here
+DEBUG=false
+```
+
+Reference it in `docker-compose.yml`:
+
+```yaml
+services:
+  backend:
+    env_file: .env
+```
+
+**Critical:** Add `.env` to both `.gitignore` and `.dockerignore`. API keys should never be in version control or baked into images.
+
+Create a `.env.example` (committed to Git) showing which variables are needed without actual values:
+
+```bash
+# .env.example — copy to .env and fill in values
+OLLAMA_URL=http://ollama:11434
+MODEL_NAME=llama3.2:1b
+OPENAI_API_KEY=your-key-here
+```
+
+---
+
+## Docker Volumes for Data Persistence
+
+Environment variables configure behavior. Volumes persist data:
+
+```yaml
+volumes:
+  chroma_data:     # ChromaDB embeddings and indices
+  ollama_models:   # Downloaded LLM model files
+```
+
+Without volumes, every `docker-compose down` would delete your ingested documents and require re-downloading Ollama models (several GB).
+
+---
+
+## Development vs. Production
+
+Use different `.env` files or Compose overrides for each environment:
+
+**Development:** Debug logging, local Ollama, smaller model, no rate limiting
+
+**Production:** Minimal logging, cloud LLM or larger local model, rate limiting, HTTPS
+
+Docker Compose supports override files:
+
+```bash
+# Development (default)
+docker-compose up
+
+# Production (with override)
+docker-compose -f docker-compose.yml -f docker-compose.prod.yml up
+```
+
+This keeps your base configuration in `docker-compose.yml` and environment-specific overrides separate.
