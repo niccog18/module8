@@ -47,7 +47,7 @@
 │                             │
 │ Technology: Python          │
 │ Data: prompt containing     │
-│ instructions + context +   │
+│ instructions + context +    │
 │ question                    │
 └──────────────┬──────────────┘
                │
