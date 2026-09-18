@@ -1,0 +1,73 @@
+# Python virtual environment
+
+venv/
+.venv/
+env/
+ENV/
+
+# Python cache and compiled files
+
+**pycache**/
+*.py[cod]
+*$py.class
+
+# Python tooling
+
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Environment and secrets
+
+.env
+.env.*
+!.env.example
+
+# Logs
+
+*.log
+
+# VS Code
+
+.vscode/
+
+# PyCharm
+
+.idea/
+
+# Jupyter Notebook
+
+.ipynb_checkpoints/
+
+# OS files
+
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Local Ollama files and model data
+
+ollama_data/
+models/
+
+# Build and distribution files
+
+build/
+dist/
+*.egg-info/
+
+# Temporary files
+
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
+
+# Local databases
+
+*.db
+*.sqlite
+*.sqlite3
