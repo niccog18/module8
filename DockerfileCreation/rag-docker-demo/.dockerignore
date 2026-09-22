@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+venv/
+.venv/
+.git/
+.gitignore
+.env
+chroma_data/
+*.log
+.DS_Store
