@@ -1,0 +1,87 @@
+Learning Objectives
+
+By the end of this lesson, you will be able to:
+
+    Explain why multi-container apps need Docker Compose instead of individual docker run commands
+    Write a docker-compose.yml that defines multiple services
+    Configure networking, ports, volumes, and dependencies between services
+    Start and stop a multi-service application with one command
+
+In the last lesson, you containerized a single FastAPI app. But your RAG application isn’t one service, it’s at least three: FastAPI (backend API), Streamlit (frontend), and Ollama (LLM). Each runs in its own container.
+
+You could start each container manually with separate docker run commands. But then you’d need to manage networking between them, remember the right ports, handle startup order, and type three long commands every time.
+
+Docker Compose solves this. You define all services in one file (docker-compose.yml) and manage them with one command: docker-compose up.
+
+Think of it like a restaurant. A Dockerfile is the recipe for one dish. Docker Compose is the dinner menu, it coordinates all the dishes so they arrive at the table together.
+The docker-compose.yml File
+
+A Compose file defines services, networks, and volumes:
+version: "3.8"
+
+services:
+  backend:
+    build: ./backend          # Build from a Dockerfile in this directory
+    ports:
+      - "8000:8000"           # Map host:container ports
+    environment:
+      - OLLAMA_URL=http://ollama:11434  # Service name as hostname!
+    depends_on:
+      - ollama                # Start ollama before backend
+    volumes:
+      - chroma_data:/app/chroma_data    # Persist ChromaDB data
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "8501:8501"
+    environment:
+      - API_URL=http://backend:8000     # Backend service name as hostname
+    depends_on:
+      - backend
+
+  ollama:
+    image: ollama/ollama      # Use pre-built image from Docker Hub
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama       # Persist downloaded models
+
+volumes:
+  chroma_data:                # Named volume for ChromaDB persistence
+  ollama_data:                # Named volume for Ollama models
+
+Key Concepts
+
+Services: Each service is a container. backend, frontend, and ollama are service names.
+
+Networking: Docker Compose creates a network automatically. Services communicate using service names as hostnames. The backend reaches Ollama at http://ollama:11434, not http://localhost:11434. This is the most important networking concept.
+
+depends_on: Controls startup order. The backend waits for Ollama to start. Note: this waits for the container to start, not for the service inside to be ready. For true readiness checks, you need health checks.
+
+Volumes: Persistent storage that survives container restarts. Without volumes, your ChromaDB data and Ollama models would be lost every time you stop the containers.
+
+build vs image: build: ./backend builds from a local Dockerfile. image: ollama/ollama pulls a pre-built image from Docker Hub.
+Essential Commands
+docker-compose up          # Start all services (logs in terminal)
+docker-compose up -d       # Start in detached mode (background)
+docker-compose down        # Stop and remove all containers
+docker-compose logs        # View logs from all services
+docker-compose logs backend  # View logs from one service
+docker-compose build       # Rebuild all images
+docker-compose ps          # List running services
+
+
+18.png
+Why Service Names Matter
+
+This is the most common source of confusion. Inside the Docker Compose network:
+# WRONG — localhost doesn't reach other containers
+OLLAMA_URL = "<http://localhost:11434>"
+
+# CORRECT — use the service name from docker-compose.yml
+OLLAMA_URL = "<http://ollama:11434>"
+
+localhost inside a container refers to that container itself, not the host machine. To reach another container, use its service name. Docker’s internal DNS resolves ollama to the Ollama container’s IP address.
+
+This is why your application code should read URLs from environment variables (set in docker-compose.yml) rather than hardcoding them. The same code works locally (localhost) and in Docker (service names) just by changing the environment variable.
