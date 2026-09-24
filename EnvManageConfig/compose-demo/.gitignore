@@ -1,0 +1,45 @@
+# Environment variables and secrets
+
+.env
+
+# Python virtual environments
+
+venv/
+.venv/
+env/
+ENV/
+
+# Python cache files
+
+**pycache**/
+*.py[cod]
+*$py.class
+
+# Python packaging
+
+*.egg
+*.egg-info/
+dist/
+build/
+
+# Testing and coverage
+
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+
+# ChromaDB persistent storage
+
+chroma_data/
+rag_db/
+
+# IDE and editor files
+
+.vscode/
+.idea/
+
+# OS files
+
+.DS_Store
+Thumbs.db
