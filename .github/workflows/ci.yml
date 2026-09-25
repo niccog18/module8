@@ -30,7 +30,7 @@ jobs:
           pip install pytest httpx  # Test dependencies
 
       - name: Run tests
-        run: pytest tests/ -v --tb=short
+        run: python -m pytest tests/ -v --tb=short
         env:
           OLLAMA_URL: http://localhost:11434  # Won't actually connect in CI
           CHROMA_PATH: ./test_chroma
@@ -68,4 +68,4 @@ jobs:
       - name: Check code formatting
         run: |
           pip install ruff
-          ruff check backend/ frontend/
+          ruff check CI_CD/compose-demo/backend/ CI_CD/compose-demo/frontend/
