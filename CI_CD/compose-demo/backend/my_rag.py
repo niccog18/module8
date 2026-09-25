@@ -1,12 +1,12 @@
-import os
 import json
+import os
 import re
-import urllib.request
 import urllib.error
+import urllib.request
 
 import chromadb
-from sentence_transformers import SentenceTransformer
 from config import settings
+from sentence_transformers import SentenceTransformer
 
 DOCS_DIR = settings.DOCS_DIRECTORY
 CHROMA_PATH = settings.CHROMA_PATH

@@ -1,15 +1,15 @@
+import chromadb
+from config import settings
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
-import chromadb
-from sentence_transformers import SentenceTransformer
-from config import settings
 from my_rag import (
-    load_documents,
     chunk_documents,
     ingest_documents,
+    load_documents,
     rag_query,
 )
+from pydantic import BaseModel
+from sentence_transformers import SentenceTransformer
 
 app = FastAPI(title="RAG API")
 
