@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: ./backend  # Run commands from backend dir
+        working-directory: ./CI_CD/compose-demo/backend  # Changed from just ./backend which run commands from backend dir to ./CI_CD/compose-demo/backend to ensure correct context with my project structure
 
     steps:
       - name: Checkout code
@@ -43,10 +43,10 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Build backend image
-        run: docker build -t rag-backend ./backend
+        run: docker build -t rag-backend ./CI_CD/compose-demo/backend  # Changed from just ./backend which run commands from backend dir to ./CI_CD/compose-demo/backend to ensure correct context with my project structure
 
       - name: Build frontend image
-        run: docker build -t rag-frontend ./frontend
+        run: docker build -t rag-frontend ./CI_CD/compose-demo/frontend  # Changed from just ./frontend which run commands from frontend dir to ./CI_CD/compose-demo/frontend to ensure correct context with my project structure
 
       - name: Verify images exist
         run: |

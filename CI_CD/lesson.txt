@@ -1,0 +1,79 @@
+Learning Objectives
+
+By the end of this lesson, you will be able to:
+
+    Explain what CI/CD is and why automated testing and deployment matter
+    Read and understand a GitHub Actions workflow file
+    Set up a basic CI workflow that runs tests on every push
+    Explain how CI/CD fits into a professional development workflow
+
+Imagine you’re working on a team. Five developers push code every day. How do you know nobody accidentally broke the API? That the tests still pass? That the Docker image still builds?
+
+You could ask everyone to run tests before pushing. But people forget. People rush. People think their change is "too small to break anything" (it always is, until it isn’t).
+
+CI/CD (Continuous Integration / Continuous Deployment) automates this. Every time someone pushes code, a server automatically runs the tests, builds the Docker image, and (optionally) deploys the new version. No human memory required.
+What Is CI/CD?
+
+Continuous Integration (CI): Every code push triggers automated checks: run tests, check code formatting, build the Docker image. If anything fails, the developer is notified immediately. "Integration" means verifying that new code integrates correctly with the existing codebase.
+
+Continuous Deployment (CD): If all CI checks pass, the new version is automatically deployed to production (or staging). This is the advanced version, for this course, we focus on CI.
+GitHub Actions: CI for Your Projects
+
+GitHub Actions is GitHub’s built-in CI/CD system. You define workflows in .yml files inside .github/workflows/. Every push or pull request triggers the workflow.
+
+A workflow file lives at:
+your-repo/
+└── .github/
+    └── workflows/
+        └── ci.yml
+
+Anatomy of a Workflow
+name: CI Pipeline          # Name shown in GitHub UI
+
+on:                         # When to run
+  push:
+    branches: [main]        # Run on pushes to main
+  pull_request:
+    branches: [main]        # Run on PRs targeting main
+
+jobs:
+  test:                     # Job name
+    runs-on: ubuntu-latest  # Run on a fresh Ubuntu VM
+
+    steps:                  # Steps to execute
+      - name: Checkout code
+        uses: actions/checkout@v4   # Clone the repo
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run tests
+        run: pytest tests/ -v
+
+This workflow: triggers on every push to main and every PR, spins up a fresh Ubuntu VM, installs Python 3.11, installs your project dependencies, and runs pytest. If any test fails, the workflow fails, and GitHub shows a red X on the commit or PR.
+Adding Docker Build Verification
+
+For containerized applications, verify the Docker image builds correctly:
+docker-build:
+  runs-on: ubuntu-latest
+  steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Build Docker image
+      run: docker build -t my-app ./backend
+
+    - name: Verify image was created
+      run: docker images my-app
+
+This catches Dockerfile errors, missing files, and dependency issues before they reach production.
+Why CI/CD Matters for Your Career
+
+Every professional development team uses CI/CD. Understanding it means you can contribute to existing pipelines, set up CI for new projects, and debug failing builds. For job interviews and your portfolio, having a .github/workflows/ci.yml in your project signals professional development practices.
+
+For the module project, adding a CI workflow is optional but impressive. It shows you understand the full development lifecycle: write code → test locally → push → CI verifies → deploy.
