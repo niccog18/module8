@@ -18,6 +18,13 @@ def test_root():
     assert response.json()["message"] == "RAG API running in Docker"
 
 
+def test_stats():
+    response = client.get("/stats")
+
+    assert response.status_code == 200
+    assert "document_count" in response.json()
+
+
 def test_ask_empty_question():
     response = client.post("/ask", json={"question": ""})
 

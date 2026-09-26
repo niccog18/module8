@@ -46,6 +46,13 @@ def health():
     }
 
 
+@app.get("/stats")
+def stats():
+    return {
+        "document_count": collection.count(),
+    }
+
+
 @app.post("/ingest")
 def ingest():
     documents = load_documents()
